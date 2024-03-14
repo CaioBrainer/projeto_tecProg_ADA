@@ -7,11 +7,16 @@ import json
 
 pio.renderers.default = 'browser' # renderizador mais 'leve' que encontrei na tentativa e erro :)
 
-base_ecomerce = pd.read_parquet('data/amostra.parquet')
+base_ecomerce = pd.read_parquet('dados/amostra.parquet')
 geojson = json.load(open("geojson/brasil_estados.json"))
 
 compra_por_estado = base_ecomerce.groupby(by='customer_state').size().sort_values(ascending=False).reset_index()
 compra_por_estado = compra_por_estado.rename(columns={'customer_state': 'estado do cliente', 0: 'quantidade de compras',})
+
+tipo_pagamento = base_ecomerce.groupby(by='payment_type').size().reset_index().sort_values(by=0, ascending=False)
+tipo_pagamento = tipo_pagamento.rename(columns={'payment_type': 'forma de pagamento', 0: 'quantidade'})
+mapeamento = {'credit_card': 'crédito', 'debit_card': 'débito', 'voucher':'voucher', 'boleto':'boleto'}
+tipo_pagamento['forma de pagamento'] = tipo_pagamento['forma de pagamento'].map(mapeamento)
 
 # Título da página
 #st.markdown("<h1 style='text-align: center; color: black;'>Diagramas\n</h1> <br>", unsafe_allow_html=True)
@@ -64,9 +69,15 @@ if opcoes == 'Gráficos':
 
     fig_bar = px.bar(compra_por_estado.head(10), x='estado do cliente', y='quantidade de compras', title='Gasdsadas')
     fig_bar.update_layout(width=600, height=600, dragmode=False, paper_bgcolor="white")
+
+    fig_forma = px.bar(tipo_pagamento, x='forma de pagamento', y='quantidade', title='teste')
+    fig_forma.update_layout(width=600, height=600, dragmode=False, paper_bgcolor="white")
     
     st.plotly_chart(fig_map)
     st.plotly_chart(fig_bar)
+    st.plotly_chart(fig_forma)
+    
+
     # st.caption("<p style='text-align: center; color: black;'>vai rpecisar de legenda?\n</p> <br>",
     #           unsafe_allow_html=True)
 
